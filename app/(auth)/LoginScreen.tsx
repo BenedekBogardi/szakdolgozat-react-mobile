@@ -18,34 +18,62 @@ export default function LoginScreen() {
       Alert.alert("Hiba", "Kérjük, adja meg az e-mail címét és a jelszavát.");
       return;
     }
+  
     setBBetolt(true);
+  
     try {
-      const response = await fetch("http://192.168.100.4:3000/students/login", {
+      console.log("Bejelentkezési próbálkozás e-mail:", strEmail);
+      console.log("Megadott jelszó:", strJelszo);
+  
+      let response = await fetch("http://192.168.100.4:3000/students/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: strEmail, password: strJelszo }),
       });
-      console.log(strEmail)
-      console.log(strJelszo)
-      const data = await response.json();
-      console.log(data)
-      setBBetolt(false);
+  
+      let data = await response.json();
+  
+      console.log("Diák bejelentkezési válasz:", data);
+  
       if (response.ok) {
-        Alert.alert("Sikeres bejelentkezés", "Üdvözöljük!");
-        router.replace("/(auth)/LoggedIn")
-      } else {
-        Alert.alert("Hiba", data.message || "Hibás bejelentkezési adatok.");
+        console.log("StudentID:", data.id);
+        console.log("Token:", data.token);
+        Alert.alert("Sikeres bejelentkezés", `Üdvözöljük, diák! Azonosító: ${data.id}`);
+        router.replace(`/(auth)/LoggedIn`);
+        setBBetolt(false);
+        return;
       }
+  
+      response = await fetch("http://192.168.100.4:3000/teachers/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: strEmail, password: strJelszo }),
+      });
+  
+      data = await response.json();
+  
+      console.log("Tanár bejelentkezési válasz:", data);
+  
+      if (response.ok) {
+        console.log("TeacherID:", data.teacherId);
+        console.log("Token:", data.token);
+        Alert.alert("Sikeres bejelentkezés", `Üdvözöljük, tanár! Azonosító: ${data.id}`);
+        router.replace(`/(auth)/LoggedIn`);
+        setBBetolt(false);
+        return;
+      }
+  
+      console.log("Bejelentkezés sikertelen.");
+      Alert.alert("Hiba", "Hibás bejelentkezési adatok.");
     } catch (error) {
-      setBBetolt(false);
+      console.log("Hiba a bejelentkezés során:", error);
       Alert.alert("Hiba", "Nem sikerült csatlakozni a szerverhez.");
-      console.log(error)
-    }
-    finally {
-      setBBetolt(false)
+    } finally {
+      setBBetolt(false);
     }
   };
-
+  
+  
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 0.3, justifyContent: "center", alignItems: "center" }}>
       <Text style={{ fontSize: 25, textAlign: "center" }}>Insert Webpage Name{"\n"}Bejelentkezés{"\n"}{"\n"}</Text>
