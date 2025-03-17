@@ -25,7 +25,7 @@ export default function LoginScreen() {
       console.log("Bejelentkezési próbálkozás e-mail:", strEmail);
       console.log("Megadott jelszó:", strJelszo);
   
-      let response = await fetch("http://192.168.100.4:3000/students/login", {
+      let response = await fetch("http://192.168.56.1:3000/students/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: strEmail, password: strJelszo }),
@@ -39,12 +39,12 @@ export default function LoginScreen() {
         console.log("StudentID:", data.id);
         console.log("Token:", data.token);
         Alert.alert("Sikeres bejelentkezés", `Üdvözöljük, diák! Azonosító: ${data.id}`);
-        router.replace(`/(auth)/LoggedIn`);
+        router.replace(`/(auth)/LoggedInStudent`);
         setBBetolt(false);
         return;
       }
   
-      response = await fetch("http://192.168.100.4:3000/teachers/login", {
+      response = await fetch("http://192.168.56.1:3000/teachers/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: strEmail, password: strJelszo }),
@@ -57,8 +57,8 @@ export default function LoginScreen() {
       if (response.ok) {
         console.log("TeacherID:", data.teacherId);
         console.log("Token:", data.token);
-        Alert.alert("Sikeres bejelentkezés", `Üdvözöljük, tanár! Azonosító: ${data.id}`);
-        router.replace(`/(auth)/LoggedIn`);
+        Alert.alert("Sikeres bejelentkezés", `Jó napot tanár! Azonosító: ${data.id}`);
+        router.replace(`/(auth)/LoggedInTeacher`);
         setBBetolt(false);
         return;
       }
