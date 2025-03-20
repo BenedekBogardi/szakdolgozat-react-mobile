@@ -18,53 +18,54 @@ export default function LoginScreen() {
       Alert.alert("Hiba", "Kérjük, adja meg az e-mail címét és a jelszavát.");
       return;
     }
-  
+
     setBBetolt(true);
-  
+
     try {
       console.log("Bejelentkezési próbálkozás e-mail:", strEmail);
       console.log("Megadott jelszó:", strJelszo);
-  
-      let response = await fetch("http://192.168.56.1:3000/students/login", {
+
+      let response = await fetch("http://192.168.56.1:3000/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: strEmail, password: strJelszo }),
+        body: JSON.stringify({ username: strEmail, password: strJelszo }),
       });
-  
+
       let data = await response.json();
-  
-      console.log("Diák bejelentkezési válasz:", data);
-  
+
+      console.log("Bejelentkezési válasz:", data);
+
       if (response.ok) {
-        console.log("StudentID:", data.id);
-        console.log("Token:", data.token);
-        Alert.alert("Sikeres bejelentkezés", `Üdvözöljük, diák! Azonosító: ${data.id}`);
-        router.replace(`/(auth)/LoggedInStudent`);
-        setBBetolt(false);
-        return;
+        // Now fetch the user's role with the '/auth/self' endpoint
+        let roleResponse = await fetch("http://192.168.56.1:3000/auth/self", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${data.token}`,
+          },
+        });
+
+        let roleData = await roleResponse.json();
+
+        console.log("Role data:", roleData);
+        
+        if (roleResponse.ok) {
+          if (roleData.role === "Teacher") {
+            console.log("TeacherID:", data.id);
+            router.replace(`/(auth)/LoggedInTeacher`);
+          } else if (roleData.role === "Student") {
+            console.log("StudentID:", data.id);
+            router.replace(`/(auth)/LoggedInStudent`);
+          } else {
+            Alert.alert("Hiba", "Ismeretlen szerepkör.");
+          }
+        } else {
+          Alert.alert("Hiba", "A szerep lekérdezése nem sikerült.");
+        }
+
+      } else {
+        Alert.alert("Hiba", "Hibás bejelentkezési adatok.");
       }
-  
-      response = await fetch("http://192.168.56.1:3000/teachers/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: strEmail, password: strJelszo }),
-      });
-  
-      data = await response.json();
-  
-      console.log("Tanár bejelentkezési válasz:", data);
-  
-      if (response.ok) {
-        console.log("TeacherID:", data.teacherId);
-        console.log("Token:", data.token);
-        Alert.alert("Sikeres bejelentkezés", `Jó napot tanár! Azonosító: ${data.id}`);
-        router.replace(`/(auth)/LoggedInTeacher`);
-        setBBetolt(false);
-        return;
-      }
-  
-      console.log("Bejelentkezés sikertelen.");
-      Alert.alert("Hiba", "Hibás bejelentkezési adatok.");
+
     } catch (error) {
       console.log("Hiba a bejelentkezés során:", error);
       Alert.alert("Hiba", "Nem sikerült csatlakozni a szerverhez.");
@@ -72,8 +73,7 @@ export default function LoginScreen() {
       setBBetolt(false);
     }
   };
-  
-  
+
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 0.3, justifyContent: "center", alignItems: "center" }}>
       <Text style={{ fontSize: 25, textAlign: "center" }}>Insert Webpage Name{"\n"}Bejelentkezés{"\n"}{"\n"}</Text>
