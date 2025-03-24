@@ -33,10 +33,9 @@ export default function LoginScreen() {
 
       let data = await response.json();
 
-      console.log("Bejelentkezési válasz:", data);
+      console.log("Bejelentkezési válasz: ", data);
 
       if (response.ok) {
-        // Now fetch the user's role with the '/auth/self' endpoint
         let roleResponse = await fetch("http://192.168.56.1:3000/auth/self", {
           method: "GET",
           headers: {
@@ -45,25 +44,23 @@ export default function LoginScreen() {
         });
 
         let roleData = await roleResponse.json();
-
-        console.log("Role data:", roleData);
         
         if (roleResponse.ok) {
           if (roleData.role === "Teacher") {
-            console.log("TeacherID:", data.id);
+            console.log("TeacherID: ", data.id);
             router.replace(`/(auth)/LoggedInTeacher`);
           } else if (roleData.role === "Student") {
-            console.log("StudentID:", data.id);
+            console.log("StudentID: ", data.id);
             router.replace(`/(auth)/LoggedInStudent`);
           } else {
-            Alert.alert("Hiba", "Ismeretlen szerepkör.");
+            Alert.alert("Hiba", "Ismeretlen szerep.");
           }
         } else {
           Alert.alert("Hiba", "A szerep lekérdezése nem sikerült.");
         }
 
       } else {
-        Alert.alert("Hiba", "Hibás bejelentkezési adatok.");
+        Alert.alert("Hiba", "Hibás bejelentkezési adatok!");
       }
 
     } catch (error) {
