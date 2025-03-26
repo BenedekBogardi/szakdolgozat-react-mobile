@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
 import React from 'react';
+import { IoIosArrowDropleftCircle } from 'react-icons/io';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet, Image } from 'react-native';
 
 const chats = [
@@ -8,8 +9,8 @@ const chats = [
     { id: '3', name: 'Másik diák', lastMessage: 'Nem működik még' },
 ];
 const routes = [
-    { id: '1', route: `/LoggedInTeacher`},
-    { id: '2', route: "/auth"}
+    { id: '1', route: `/LoggedInTeacher` },
+    { id: '2', route: "/auth" }
 ] as const;
 const TeacherMainPage = () => {
     const selectedRoute = routes.find(r => r.id === '1')?.route;
@@ -23,17 +24,15 @@ const TeacherMainPage = () => {
 
     return (
         <View style={styles.container}>
-            {/* Header */}
             <View style={styles.header}>
-                <Text style={styles.headerText}>Tanár-diák chat app</Text>
-                <TouchableOpacity style={styles.profileButton} onPress={() => { /* Profilra vezető link */ }}>
+                <Text style={styles.headerText}>Tanár csevegő</Text>
+                <TouchableOpacity style={styles.profileButton} onPress={() => { router.replace('/(auth)/ProfilePage') }}>
                     <Image
-                        source={ require('./img/profile.png') }
+                        source={require('./img/profile.png')}
                         style={styles.profileImage}
                     />
                 </TouchableOpacity>
             </View>
-
             <FlatList
                 data={chats}
                 renderItem={renderChatItem}
@@ -101,6 +100,12 @@ const styles = StyleSheet.create({
         height: 40,
         borderRadius: 20,
     },
+    iconStyle: {
+        color: '#ffffff',
+        width: 30,
+        height: 30,
+        marginRight: 20
+    }
 });
 
 export default TeacherMainPage;

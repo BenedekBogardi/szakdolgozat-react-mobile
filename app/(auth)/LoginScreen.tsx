@@ -2,6 +2,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { Alert, Button, ScrollView, Text, TextInput, View, ActivityIndicator } from "react-native";
 import { router } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function LoginScreen() {
   const [strEmail, setStrEmail] = useState("");
@@ -20,7 +21,6 @@ export default function LoginScreen() {
     }
 
     setBBetolt(true);
-
     try {
       console.log("Bejelentkezési próbálkozás e-mail:", strEmail);
       console.log("Megadott jelszó:", strJelszo);
@@ -36,6 +36,7 @@ export default function LoginScreen() {
       console.log("Bejelentkezési válasz: ", data);
 
       if (response.ok) {
+        await AsyncStorage.setItem("userToken", data.token)
         let roleResponse = await fetch("http://192.168.56.1:3000/auth/self", {
           method: "GET",
           headers: {
@@ -44,7 +45,8 @@ export default function LoginScreen() {
         });
 
         let roleData = await roleResponse.json();
-        
+        console.log(roleData.token)
+
         if (roleResponse.ok) {
           if (roleData.role === "Teacher") {
             console.log("TeacherID: ", data.id);

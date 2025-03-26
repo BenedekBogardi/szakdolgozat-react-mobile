@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity, Animated, Image } from "react-native";
 import io from "socket.io-client";
 import { IoIosArrowDropleftCircle } from "react-icons/io";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const socket = io("http://localhost:3002");
 
@@ -11,7 +12,54 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [message, setMessage] = useState("");
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [userData, setUserData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>("");
+
   const [messages, setMessages] = useState<Array<{ text: string; self: boolean; username: string }>>([]);
+
+  useEffect(() => {
+    const fetchTokenAndProfile = async () => {
+      const token = await AsyncStorage.getItem("userToken");
+      if (token) {
+        fetchUserProfile(token);
+      } else {
+        setError("Token not found, please log in again.");
+        setLoading(false);
+      }
+    };
+
+    fetchTokenAndProfile();
+  }, []);
+
+  const fetchUserProfile = async (authToken: string) => {
+    try {
+      setLoading(true);
+      let response = await fetch("http://192.168.56.1:3000/auth/self", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${authToken}`,
+        },
+      });
+
+      let data = await response.json();
+
+      if (response.ok) {
+        const fullName = data.firstName + " " + data.lastName;
+        setUsername(fullName); // Set only the logged-in user's username
+        setUserData(data);
+        setIsLoggedIn(true);
+        setLoading(false);
+      } else {
+        setError("Failed to fetch user data.");
+        setLoading(false);
+      }
+    } catch (error) {
+      console.log("Fetch error:", error);
+      setError("Unable to fetch user data.");
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (message.trim() === '') {
@@ -31,11 +79,11 @@ export default function App() {
 
   useEffect(() => {
     socket.on("user-joined", (data) => {
-      setMessages((prevMessages) => [...prevMessages, { text: data.message, self: false, username: "" }]);
+      setMessages((prevMessages) => [...prevMessages, { text: data.message, self: false, username: data.username }]);
     });
 
     socket.on("user-left", (data) => {
-      setMessages((prevMessages) => [...prevMessages, { text: data.message, self: false, username: "" }]);
+      setMessages((prevMessages) => [...prevMessages, { text: data.message, self: false, username: data.username }]);
     });
 
     socket.on("message", (msg) => {
@@ -51,13 +99,6 @@ export default function App() {
     };
   }, [username]);
 
-  const handleLogin = () => {
-    if (username.trim()) {
-      socket.emit("joinChat", username);
-      setIsLoggedIn(true);
-    }
-  };
-
   const sendMessage = () => {
     if (message.trim()) {
       socket.emit("newMessage", { username, text: message });
@@ -69,34 +110,20 @@ export default function App() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-      <TouchableOpacity style={styles.backButton}>
-      <IoIosArrowDropleftCircle style={styles.iconStyle}/>
+        <TouchableOpacity style={styles.backButton} onPress={() => { router.replace('/(auth)/TeacherMainPage') }}>
+          <IoIosArrowDropleftCircle style={styles.iconStyle} />
         </TouchableOpacity>
         <Text style={styles.headerText}>Tanár csevegő</Text>
-        <TouchableOpacity style={styles.profileButton} onPress={() => { /* Profilra vezető link */ }}>
+        <TouchableOpacity style={styles.profileButton} onPress={() => { /* Navigate to profile */ }}>
           <Image
             source={require('./img/profile.png')}
             style={styles.profileImage}
           />
         </TouchableOpacity>
       </View>
-      {!isLoggedIn ? (
-        <View style={styles.loginContainer}>
-          <TextInput
-            style={styles.inputAtLogin}
-            value={username}
-            onChangeText={setUsername}
-            placeholder="Enter your username"
-          />
-          <TouchableOpacity style={styles.buttonAtLogin} onPress={handleLogin}>
-            <Text style={styles.buttonText}>Login</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <>
-          {/*<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', flexDirection: 'row', padding: 20 }}></View>
-            avagy ide jön majd egy header*/}
 
+      {isLoggedIn ? (
+        <>
           <FlatList
             data={messages}
             renderItem={({ item }) => (
@@ -115,6 +142,7 @@ export default function App() {
               value={message}
               onChangeText={setMessage}
               placeholder="Start typing..."
+              autoComplete="off"
             />
             {message.trim() !== '' && (
               <Animated.View style={{ opacity: fadeAnim }}>
@@ -128,6 +156,12 @@ export default function App() {
             )}
           </View>
         </>
+      ) : (
+        loading ? (
+          <Text>Loading...</Text>
+        ) : (
+          <Text>{error}</Text>
+        )
       )}
     </View>
   );
@@ -139,10 +173,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#fff",
-  },
-  loginContainer: {
-    width: "100%",
-    alignItems: "center",
   },
   messageList: {
     marginTop: 30,
@@ -187,15 +217,6 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     alignItems: "center"
   },
-  inputAtLogin: {
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 10,
-    width: "80%",
-    marginBottom: 10,
-    alignItems: "center"
-  },
   button: {
     backgroundColor: "#76d1e3",
     padding: 10,
@@ -205,17 +226,6 @@ const styles = StyleSheet.create({
     marginRight: 10,
     alignItems: "center",
     width: "80%",
-  },
-  buttonAtLogin: {
-    backgroundColor: "#0ead16",
-    padding: 10,
-    borderRadius: 10,
-    alignItems: "center",
-    width: "80%",
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
   },
   imageButton: {
     width: 21,
@@ -245,10 +255,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  profileButtonText: {
-    color: '#6200EE',
-    fontSize: 16,
-  },
   profileImage: {
     width: 40,
     height: 40,
@@ -258,11 +264,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 16,
     top: 16,
-  },
-  backImage: {
-    width: 30,
-    height: 30,
-    resizeMode: 'contain',
   },
   iconStyle: {
     color: '#ffffff',
