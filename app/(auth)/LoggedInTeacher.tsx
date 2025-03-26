@@ -1,6 +1,8 @@
+import { router } from "expo-router";
 import React, { useState, useEffect, useRef } from "react";
 import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity, Animated, Image } from "react-native";
 import io from "socket.io-client";
+import { IoIosArrowDropleftCircle } from "react-icons/io";
 
 const socket = io("http://localhost:3002");
 
@@ -66,6 +68,18 @@ export default function App() {
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+      <TouchableOpacity style={styles.backButton}>
+      <IoIosArrowDropleftCircle style={styles.iconStyle}/>
+        </TouchableOpacity>
+        <Text style={styles.headerText}>Tanár csevegő</Text>
+        <TouchableOpacity style={styles.profileButton} onPress={() => { /* Profilra vezető link */ }}>
+          <Image
+            source={require('./img/profile.png')}
+            style={styles.profileImage}
+          />
+        </TouchableOpacity>
+      </View>
       {!isLoggedIn ? (
         <View style={styles.loginContainer}>
           <TextInput
@@ -82,8 +96,8 @@ export default function App() {
         <>
           {/*<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', flexDirection: 'row', padding: 20 }}></View>
             avagy ide jön majd egy header*/}
-            
-           <FlatList
+
+          <FlatList
             data={messages}
             renderItem={({ item }) => (
               <View style={[styles.message, item.self ? styles.selfMessage : styles.otherMessage]}>
@@ -124,7 +138,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 10,
     backgroundColor: "#fff",
   },
   loginContainer: {
@@ -208,5 +221,53 @@ const styles = StyleSheet.create({
     width: 21,
     height: 21,
     resizeMode: 'contain',
+  },
+  header: {
+    height: 60,
+    backgroundColor: '#6200EE',
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    width: "100%"
+  },
+  headerText: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginLeft: 40,
+    height: 30
+  },
+  profileButton: {
+    padding: 2,
+    backgroundColor: '#ffffff',
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  profileButtonText: {
+    color: '#6200EE',
+    fontSize: 16,
+  },
+  profileImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  backButton: {
+    position: 'absolute',
+    left: 16,
+    top: 16,
+  },
+  backImage: {
+    width: 30,
+    height: 30,
+    resizeMode: 'contain',
+  },
+  iconStyle: {
+    color: '#ffffff',
+    width: 30,
+    height: 30,
+    marginRight: 20
   }
 });

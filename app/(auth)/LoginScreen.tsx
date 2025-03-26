@@ -48,7 +48,7 @@ export default function LoginScreen() {
         if (roleResponse.ok) {
           if (roleData.role === "Teacher") {
             console.log("TeacherID: ", data.id);
-            router.replace(`/(auth)/LoggedInTeacher`);
+            router.replace(`/(auth)/TeacherMainPage`);
           } else if (roleData.role === "Student") {
             console.log("StudentID: ", data.id);
             router.replace(`/(auth)/LoggedInStudent`);
