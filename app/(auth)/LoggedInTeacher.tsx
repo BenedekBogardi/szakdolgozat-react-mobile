@@ -20,11 +20,25 @@ export default function App() {
 
   useEffect(() => {
     const fetchTokenAndProfile = async () => {
-      const token = await AsyncStorage.getItem("userToken");
-      if (token) {
-        fetchUserProfile(token);
-      } else {
-        setError("Token not found, please log in again.");
+      try {
+        const sUserId = await AsyncStorage.getItem("currentUser");
+        if (!sUserId) {
+          setError("No logged-in user found.");
+          setLoading(false);
+          return;
+        }
+    
+        const sToken = await AsyncStorage.getItem(`userToken_${sUserId}`);
+        if (!sToken) {
+          setError("Token missing for logged-in user.");
+          setLoading(false);
+          return;
+        }
+    
+        await fetchUserProfile(sToken);
+      } catch (oError) {
+        console.error("Error fetching stored token:", oError);
+        setError("Failed to retrieve stored session.");
         setLoading(false);
       }
     };
@@ -35,7 +49,7 @@ export default function App() {
   const fetchUserProfile = async (authToken: string) => {
     try {
       setLoading(true);
-      let response = await fetch("http://192.168.56.1:3000/auth/self", {
+      let response = await fetch("http://192.168.100.4:3000/auth/self", {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${authToken}`,
@@ -46,7 +60,7 @@ export default function App() {
 
       if (response.ok) {
         const fullName = data.firstName + " " + data.lastName;
-        setUsername(fullName); // Set only the logged-in user's username
+        setUsername(fullName);
         setUserData(data);
         setIsLoggedIn(true);
         setLoading(false);
@@ -78,6 +92,7 @@ export default function App() {
   }, [message]);
 
   useEffect(() => {
+    if(!username) return
     socket.on("user-joined", (data) => {
       setMessages((prevMessages) => [...prevMessages, { text: data.message, self: false, username: data.username }]);
     });
@@ -111,10 +126,10 @@ export default function App() {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => { router.replace('/(auth)/TeacherMainPage') }}>
-          <IoIosArrowDropleftCircle style={styles.iconStyle} />
+          <Text>Asd</Text>
         </TouchableOpacity>
         <Text style={styles.headerText}>Tanár csevegő</Text>
-        <TouchableOpacity style={styles.profileButton} onPress={() => { /* Navigate to profile */ }}>
+        <TouchableOpacity style={styles.profileButton} onPress={() => {  }}>
           <Image
             source={require('./img/profile.png')}
             style={styles.profileImage}

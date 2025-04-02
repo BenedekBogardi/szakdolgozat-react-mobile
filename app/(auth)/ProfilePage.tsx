@@ -9,14 +9,27 @@ export default function ProfilePage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string>("");
 
-    
     useEffect(() => {
         const fetchTokenAndProfile = async () => {
-            const token = await AsyncStorage.getItem("userToken");
-            if (token) {
-                fetchUserProfile(token);
-            } else { 
-                setError("Token not found, please log in again.");
+            try {
+                const sUserId = await AsyncStorage.getItem("currentUser");
+                if (!sUserId) {
+                    setError("No logged-in user found.");
+                    setLoading(false);
+                    return;
+                }
+
+                const sToken = await AsyncStorage.getItem(`userToken_${sUserId}`);
+                if (!sToken) {
+                    setError("Token missing for logged-in user.");
+                    setLoading(false);
+                    return;
+                }
+
+                fetchUserProfile(sToken);
+            } catch (error) {
+                console.error("Error fetching stored token:", error);
+                setError("Failed to retrieve stored session.");
                 setLoading(false);
             }
         };
@@ -27,7 +40,7 @@ export default function ProfilePage() {
     const fetchUserProfile = async (authToken: string) => {
         try {
             setLoading(true);
-            let response = await fetch("http://192.168.56.1:3000/auth/self", {
+            let response = await fetch("http://192.168.100.4:3000/auth/self", {
                 method: "GET",
                 headers: {
                     "Authorization": `Bearer ${authToken}`,
@@ -44,7 +57,7 @@ export default function ProfilePage() {
                 setLoading(false);
             }
         } catch (error) {
-            console.log("Fetchelési hiba:", error);
+            console.log("Fetch error:", error);
             setError("Unable to fetch user data.");
             setLoading(false);
         }
@@ -52,6 +65,7 @@ export default function ProfilePage() {
 
     const handleLogout = async () => {
         await AsyncStorage.removeItem("userToken");
+        await AsyncStorage.removeItem("currentUser");
         router.replace("/(auth)/LoginScreen");
     };
 
@@ -118,11 +132,6 @@ const styles = StyleSheet.create({
     backButton: {
         backgroundColor: "#6200EE",
         borderRadius: 8,
-    },
-    backText: {
-        color: "#fff",
-        fontWeight: "bold",
-        textAlign: "center"
     },
     profileSection: {
         justifyContent: "center",
