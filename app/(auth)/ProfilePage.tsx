@@ -70,6 +70,14 @@ export default function ProfilePage() {
         router.replace("/(auth)/LoginScreen");
     };
 
+    const handleBackPress = () => {
+        if (userData?.role === "Teacher") {
+            router.replace("/(auth)/TeacherMainPage");
+        } else if (userData?.role === "Student") {
+            router.replace("/(auth)/StudentMainPage");
+        }
+    };
+
     if (loading) {
         return (
             <View style={styles.container}>
@@ -90,7 +98,7 @@ export default function ProfilePage() {
         <SafeAreaView style={styles.container}>
             <View style={styles.container}>
                 <View style={styles.header}>
-                    <TouchableOpacity style={styles.backButton} onPress={() => { router.replace('/(auth)/TeacherMainPage') }}>
+                    <TouchableOpacity style={styles.backButton} onPress={() => {handleBackPress}}>
                         <AntDesign name="leftcircleo" style={styles.iconStyle} />
                     </TouchableOpacity>
                     <Text style={styles.headerText}>Tanár-diák chat app</Text>

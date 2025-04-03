@@ -132,7 +132,7 @@ export default function LoggedInStudent() {
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => { router.replace('/(auth)/TeacherMainPage') }}>
+          <TouchableOpacity style={styles.backButton} onPress={() => { router.replace('/(auth)/StudentMainPage') }}>
             <AntDesign name="leftcircleo" style={styles.iconStyle} />
           </TouchableOpacity>
           <Text style={styles.headerText}>Diák csevegő</Text>

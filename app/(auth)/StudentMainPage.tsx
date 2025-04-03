@@ -51,21 +51,14 @@ const StudentMainPage = () => {
 
     const fFetchUsers = async () => {
         try {
-            const sUserId = await AsyncStorage.getItem("currentUser");
-            console.log(sUserId)
-            if (!sUserId) {
-                console.error("No logged-in user found");
-                return;
-            }
-
-            const sToken = await AsyncStorage.getItem(`userToken_${sUserId}`);
-            if (!sToken) {
-                console.error("No token found for the logged-in user");
-                return;
-            }
-
-            const oResponse = await fetch("http://192.168.100.4:3000/users/selectTeacher", {
-                method: "POST"
+            const oResponse = await fetch("http://192.168.100.4:3000/users/selectTeacher", { //-------?
+                method: "GET",
+                /*headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    id: id,
+                }),*/
             });
 
             if (!oResponse.ok) {
