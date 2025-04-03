@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, BackHandler, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-import { IoIosArrowDropleftCircle } from "react-icons/io";
+import AntDesign from '@expo/vector-icons/AntDesign';
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProfilePage() {
     const [userData, setUserData] = useState<any>(null);
@@ -86,32 +87,33 @@ export default function ProfilePage() {
     }
 
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity style={styles.backButton} onPress={() => { router.replace('/(auth)/TeacherMainPage') }}>
-                    <IoIosArrowDropleftCircle style={styles.iconStyle} />
+        <SafeAreaView style={styles.container}>
+            <View style={styles.container}>
+                <View style={styles.header}>
+                    <TouchableOpacity style={styles.backButton} onPress={() => { router.replace('/(auth)/TeacherMainPage') }}>
+                        <AntDesign name="leftcircleo" style={styles.iconStyle} />
+                    </TouchableOpacity>
+                    <Text style={styles.headerText}>Tanár-diák chat app</Text>
+                </View>
+                <View style={styles.profileSection}>
+                    <Text style={styles.profileText}>
+                        {userData?.firstName} {userData?.lastName}
+                    </Text>
+                    <Text style={styles.profileDetail}>Role: {userData?.role}</Text>
+                    <Text style={styles.profileDetail}>Email: {userData?.email}</Text>
+                </View>
+                <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                    <Text style={styles.logoutText}>Logout</Text>
                 </TouchableOpacity>
-                <Text style={styles.headerText}>Tanár-diák chat app</Text>
             </View>
-            <View style={styles.profileSection}>
-                <Text style={styles.profileText}>
-                    {userData?.firstName} {userData?.lastName}
-                </Text>
-                <Text style={styles.profileDetail}>Role: {userData?.role}</Text>
-                <Text style={styles.profileDetail}>Email: {userData?.email}</Text>
-            </View>
-            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-                <Text style={styles.logoutText}>Logout</Text>
-            </TouchableOpacity>
-        </View>
+        </SafeAreaView>
     );
 }
-
 const styles = StyleSheet.create({
     container: {
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#f5f5f5",
+        backgroundColor: "#f5f5f5"
     },
     header: {
         backgroundColor: '#6200EE',
@@ -166,8 +168,8 @@ const styles = StyleSheet.create({
     },
     iconStyle: {
         color: '#ffffff',
-        width: 30,
-        height: 30,
-        marginRight: 20
+        fontSize: 25,
+        alignSelf: 'center',
+        marginLeft: 'auto',
     }
 });

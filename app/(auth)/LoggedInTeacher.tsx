@@ -1,11 +1,12 @@
 import { router } from "expo-router";
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity, Animated, Image } from "react-native";
+import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity, Animated, Image, ActivityIndicator } from "react-native";
 import io from "socket.io-client";
-import { IoIosArrowDropleftCircle } from "react-icons/io";
+import AntDesign from '@expo/vector-icons/AntDesign';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-const socket = io("http://localhost:3002");
+const socket = io("http://192.168.100.4:3002");
 
 export default function App() {
   const [username, setUsername] = useState("");
@@ -27,14 +28,14 @@ export default function App() {
           setLoading(false);
           return;
         }
-    
+
         const sToken = await AsyncStorage.getItem(`userToken_${sUserId}`);
         if (!sToken) {
           setError("Token missing for logged-in user.");
           setLoading(false);
           return;
         }
-    
+
         await fetchUserProfile(sToken);
       } catch (oError) {
         console.error("Error fetching stored token:", oError);
@@ -71,6 +72,8 @@ export default function App() {
     } catch (error) {
       console.log("Fetch error:", error);
       setError("Unable to fetch user data.");
+    }
+    finally{
       setLoading(false);
     }
   };
@@ -92,14 +95,16 @@ export default function App() {
   }, [message]);
 
   useEffect(() => {
-    if(!username) return
-    socket.on("user-joined", (data) => {
+    if (!username || !userData) return;
+    socket.emit("joinChat", { roomName: "broadcastTeachers", user: { id: userData.id, name: username, socketId: socket.id } });
+
+    /*socket.on("user-joined", (data) => {
       setMessages((prevMessages) => [...prevMessages, { text: data.message, self: false, username: data.username }]);
     });
 
     socket.on("user-left", (data) => {
       setMessages((prevMessages) => [...prevMessages, { text: data.message, self: false, username: data.username }]);
-    });
+    });*/
 
     socket.on("message", (msg) => {
       if (msg.username !== username) {
@@ -108,14 +113,15 @@ export default function App() {
     });
 
     return () => {
-      socket.off("user-joined");
-      socket.off("user-left");
+      /*socket.off("user-joined");
+      socket.off("user-left");*/
       socket.off("message");
     };
   }, [username]);
 
   const sendMessage = () => {
     if (message.trim()) {
+      console.log("Emitting message:", { username, text: message });
       socket.emit("newMessage", { username, text: message });
       setMessages((prevMessages) => [...prevMessages, { text: message, self: true, username }]);
       setMessage("");
@@ -123,62 +129,58 @@ export default function App() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => { router.replace('/(auth)/TeacherMainPage') }}>
-          <Text>Asd</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerText}>Tanár csevegő</Text>
-        <TouchableOpacity style={styles.profileButton} onPress={() => {  }}>
-          <Image
-            source={require('./img/profile.png')}
-            style={styles.profileImage}
-          />
-        </TouchableOpacity>
-      </View>
-
-      {isLoggedIn ? (
-        <>
-          <FlatList
-            data={messages}
-            renderItem={({ item }) => (
-              <View style={[styles.message, item.self ? styles.selfMessage : styles.otherMessage]}>
-                <Text style={styles.username}>{item.username}</Text>
-                <Text style={item.self ? styles.selfText : styles.otherText}>{item.text}</Text>
-              </View>
-            )}
-            keyExtractor={(item, index) => index.toString()}
-            style={styles.messageList}
-          />
-          <View style={{ width: 425, justifyContent: 'center', alignItems: 'center', flexDirection: 'row', padding: 10 }}>
-            <TextInput
-              id="MsgTxt"
-              style={styles.input}
-              value={message}
-              onChangeText={setMessage}
-              placeholder="Start typing..."
-              autoComplete="off"
-            />
-            {message.trim() !== '' && (
-              <Animated.View style={{ opacity: fadeAnim }}>
-                <TouchableOpacity style={styles.button} onPress={sendMessage}>
-                  <Image
-                    source={require('./img/send.png')}
-                    style={styles.imageButton}
-                  />
-                </TouchableOpacity>
-              </Animated.View>
-            )}
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.backButton} onPress={() => { router.replace('/(auth)/TeacherMainPage') }}>
+            <AntDesign name="leftcircleo" style={styles.iconStyle} />
+          </TouchableOpacity>
+          <Text style={styles.headerText}>Tanár csevegő</Text>
+          <TouchableOpacity style={styles.profileButton} onPress={() => { router.replace('/(auth)/ProfilePage') }}>
+            <Image source={require('./img/profile.png')} style={styles.profileImage} />
+          </TouchableOpacity>
+        </View>
+  
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#6200EE" />
           </View>
-        </>
-      ) : (
-        loading ? (
-          <Text>Loading...</Text>
+        ) : isLoggedIn ? (
+          <>
+            <FlatList
+              data={messages}
+              renderItem={({ item }) => (
+                <View style={[styles.message, item.self ? styles.selfMessage : styles.otherMessage]}>
+                  <Text style={styles.username}>{item.username}</Text>
+                  <Text style={item.self ? styles.selfText : styles.otherText}>{item.text}</Text>
+                </View>
+              )}
+              keyExtractor={(item, index) => index.toString()}
+              style={styles.messageList}
+            />
+            <View style={{ width: 425, justifyContent: 'center', alignItems: 'center', flexDirection: 'row', padding: 10 }}>
+              <TextInput
+                id="MsgTxt"
+                style={styles.input}
+                value={message}
+                onChangeText={setMessage}
+                placeholder="Start typing..."
+                autoComplete="off"
+              />
+              {message.trim() !== '' && (
+                <Animated.View style={{ opacity: fadeAnim }}>
+                  <TouchableOpacity style={styles.button} onPress={sendMessage}>
+                    <Image source={require('./img/send.png')} style={styles.imageButton} />
+                  </TouchableOpacity>
+                </Animated.View>
+              )}
+            </View>
+          </>
         ) : (
           <Text>{error}</Text>
-        )
-      )}
-    </View>
+        )}
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -195,6 +197,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   message: {
+    flex: 1,
     marginBottom: 10,
     marginLeft: 10,
     marginRight: 10,
@@ -227,9 +230,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 10,
     padding: 10,
-    width: "80%",
+    width: "70%",
     marginBottom: 10,
-    marginLeft: 10,
     alignItems: "center"
   },
   button: {
@@ -280,10 +282,15 @@ const styles = StyleSheet.create({
     left: 16,
     top: 16,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   iconStyle: {
     color: '#ffffff',
-    width: 30,
-    height: 30,
-    marginRight: 20
+    fontSize: 25,
+    alignSelf: 'center',
+    marginLeft: 'auto',
   }
 });

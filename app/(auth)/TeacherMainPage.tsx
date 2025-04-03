@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const TeacherMainPage = () => {
     const [vStudents, vSetStudents] = useState<{ id: string; firstName: string; lastName: string; lastMessage?: string }[]>([]);
@@ -96,11 +97,15 @@ const TeacherMainPage = () => {
     ];
 
     const fRenderChatItem = ({ item }) => (
-        <TouchableOpacity style={styles.chatItem} onPress={() => router.replace(`/(auth)/LoggedInTeacher`)}>
+        <TouchableOpacity
+            style={styles.chatItem}
+            onPress={() => router.replace(`/(auth)/LoggedInTeacher?room=${item.id}`)}
+        >
             <Text style={styles.chatName}>{item.name}</Text>
             <Text style={styles.lastMessage}>{item.lastMessage}</Text>
         </TouchableOpacity>
     );
+    
 
     if (loading) {
         return (
@@ -111,6 +116,7 @@ const TeacherMainPage = () => {
     }
 
     return (
+        <SafeAreaView style={styles.container}>
         <View style={styles.container}>
             <View style={styles.header}>
                 <Text style={styles.headerText}>Tanár csevegő</Text>
@@ -125,6 +131,7 @@ const TeacherMainPage = () => {
                 style={styles.chatList} 
             />
         </View>
+        </SafeAreaView>
     );
 };
 

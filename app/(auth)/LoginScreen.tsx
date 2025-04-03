@@ -64,7 +64,7 @@ export default function LoginScreen() {
               router.replace(`/(auth)/TeacherMainPage`);
             } else if (roleData.role === "Student") {
               console.log("StudentID: ", roleData.id);
-              router.replace(`/(auth)/LoggedInStudent`);
+              router.replace(`/(auth)/StudentMainPage`);
             } else {
               Alert.alert("Hiba", "Ismeretlen szerep.");
             }
