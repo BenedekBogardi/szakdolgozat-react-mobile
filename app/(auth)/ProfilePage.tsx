@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, BackHandler, Alert } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Image, Animated, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -9,6 +9,7 @@ export default function ProfilePage() {
     const [userData, setUserData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string>("");
+    const [scaleAnim] = useState(new Animated.Value(1));
 
     useEffect(() => {
         const fetchTokenAndProfile = async () => {
@@ -78,6 +79,21 @@ export default function ProfilePage() {
         }
     };
 
+    const handleLogoutAnimation = () => {
+        Animated.sequence([
+            Animated.spring(scaleAnim, {
+                toValue: 1.1,
+                friction: 3,
+                useNativeDriver: true,
+            }),
+            Animated.spring(scaleAnim, {
+                toValue: 1,
+                friction: 3,
+                useNativeDriver: true,
+            }),
+        ]).start();
+    };
+
     if (loading) {
         return (
             <View style={styles.container}>
@@ -98,30 +114,46 @@ export default function ProfilePage() {
         <SafeAreaView style={styles.container}>
             <View style={styles.container}>
                 <View style={styles.header}>
-                    <TouchableOpacity style={styles.backButton} onPress={() => {handleBackPress}}>
+                    <TouchableOpacity onPress={handleBackPress}>
                         <AntDesign name="leftcircleo" style={styles.iconStyle} />
                     </TouchableOpacity>
                     <Text style={styles.headerText}>Tanár-diák chat app</Text>
                 </View>
+
                 <View style={styles.profileSection}>
                     <Text style={styles.profileText}>
                         {userData?.firstName} {userData?.lastName}
                     </Text>
-                    <Text style={styles.profileDetail}>Role: {userData?.role}</Text>
-                    <Text style={styles.profileDetail}>Email: {userData?.email}</Text>
+                    <Text style={[styles.profileDetail, { color: userData?.role === 'Teacher' ? '#6200EE' : '#FF6347' }]}>
+                        Tanár / Diák: {userData?.role === 'Teacher' ? 'Tanár' : 'Diák'}
+                    </Text>
+                    <Text style={styles.profileDetail}>E-mail cím:{"\n"}</Text>
+                    <Text style={styles.profileDetail}>{userData?.email}</Text>
+                    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+                    <TouchableOpacity
+                        style={styles.logoutButton}
+                        onPressIn={handleLogoutAnimation}
+                        onPress={handleLogout}
+                    >
+                        <Text style={styles.logoutText}>Logout</Text>
+                    </TouchableOpacity>
+                </Animated.View>
                 </View>
-                <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-                    <Text style={styles.logoutText}>Logout</Text>
-                </TouchableOpacity>
+                <View style={styles.footer}>
+                    <Text style={styles.footerText}>© 2025 Tanár-diák chat app</Text>
+                    <Text style={styles.footerLink}>Minden jog fenntartva.</Text>
+                </View>
+                
             </View>
         </SafeAreaView>
     );
 }
+
 const styles = StyleSheet.create({
     container: {
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#f5f5f5"
+        backgroundColor: "#f5f5f5",
     },
     header: {
         backgroundColor: '#6200EE',
@@ -139,14 +171,30 @@ const styles = StyleSheet.create({
         textAlign: "right",
         flex: 1
     },
-    backButton: {
-        backgroundColor: "#6200EE",
-        borderRadius: 8,
+    iconStyle: {
+        color: '#ffffff',
+        fontSize: 25,
     },
     profileSection: {
         justifyContent: "center",
         alignItems: "center",
         marginTop: 20,
+        padding: 20,
+        borderRadius: 10,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        flex: 1,
+        marginBottom: 10
+    },
+    profileImage: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        marginBottom: 15,
+        borderWidth: 2,
+        borderColor: "#6200EE",
     },
     profileText: {
         fontSize: 24,
@@ -157,7 +205,8 @@ const styles = StyleSheet.create({
     profileDetail: {
         fontSize: 18,
         color: "#333",
-        marginBottom: 5,
+        marginBottom: 10,
+        textAlign: "justify"
     },
     errorText: {
         color: "red",
@@ -166,18 +215,33 @@ const styles = StyleSheet.create({
     },
     logoutButton: {
         marginTop: 20,
-        backgroundColor: "#FF0000",
+        backgroundColor: "#FF6347",
         padding: 10,
         borderRadius: 8,
+        width: "80%",
+        alignItems: "center",
     },
     logoutText: {
         color: "#fff",
         fontWeight: "bold",
+        fontSize: 18,
     },
-    iconStyle: {
-        color: '#ffffff',
-        fontSize: 25,
-        alignSelf: 'center',
-        marginLeft: 'auto',
-    }
+    footer: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        padding: 15,
+        backgroundColor: '#6200EE',
+        alignItems: 'center',
+    },
+    footerText: {
+        color: '#fff',
+        fontSize: 12,
+    },
+    footerLink: {
+        color: '#FFDD57',
+        fontSize: 12,
+        marginTop: 5,
+    },
 });

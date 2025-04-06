@@ -11,6 +11,7 @@ export default function AuthLayout() {
         <Stack.Screen name="TeacherMainPage" options={{ headerShown: false }}/>
         <Stack.Screen name="StudentMainPage" options={{ headerShown: false }}/>
         <Stack.Screen name="ProfilePage" options={{ headerShown: false }}/>
+        <Stack.Screen name="ChatPageGeneral" options={{ headerShown: false }}/>
         </Stack>
     )
 }

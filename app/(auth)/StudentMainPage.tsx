@@ -59,11 +59,11 @@ const StudentMainPage = () => {
                     "Content-Type": "application/json",
                 },
             });
-    
+
             if (!oResponse.ok) {
                 throw new Error(`HTTP error! Status: ${oResponse.status}`);
             }
-    
+
             const oTeacher = await oResponse.json();
             vSetTeacher(oTeacher)
             console.log("Tanár adatai:" + oTeacher.firstName + oTeacher.lastName)
@@ -75,11 +75,7 @@ const StudentMainPage = () => {
 
     useEffect(() => {
         if (typeof csTeacherId === "number" && csTeacherId > 0) {
-            console.log("Működik")
             fFetchTeacherOfStudent(csTeacherId);
-        }
-        else{
-            console.log("as")
         }
     }, [csTeacherId]);
 
@@ -101,7 +97,7 @@ const StudentMainPage = () => {
             <Text style={styles.lastMessage}>{item.lastMessage}</Text>
         </TouchableOpacity>
     );
-    
+
 
     if (loading) {
         return (
@@ -113,20 +109,24 @@ const StudentMainPage = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.headerText}>Diák csevegő</Text>
-                <TouchableOpacity style={styles.profileButton} onPress={() => router.replace('/(auth)/ProfilePage')}>
-                    <Image source={require('./img/profile.png')} style={styles.profileImage} />
-                </TouchableOpacity>
+            <View style={styles.container}>
+                <View style={styles.header}>
+                    <Text style={styles.headerText}>Diák csevegő</Text>
+                    <TouchableOpacity style={styles.profileButton} onPress={() => router.replace('/(auth)/ProfilePage')}>
+                        <Image source={require('./img/profile.png')} style={styles.profileImage} />
+                    </TouchableOpacity>
+                </View>
+                <FlatList
+                    data={vChats}
+                    renderItem={fRenderChatItem}
+                    keyExtractor={(item) => item.id.toString() || item.name}
+                    style={styles.chatList}
+                />
             </View>
-            <FlatList 
-                data={vChats} 
-                renderItem={fRenderChatItem} 
-                keyExtractor={(item) => item.id.toString() || item.name} 
-                style={styles.chatList} 
-            />
-        </View>
+            <View style={styles.footer}>
+                <Text style={styles.footerText}>© 2025 Tanár-diák chat app</Text>
+                <Text style={styles.footerLink}>Minden jog fenntartva.</Text>
+            </View>
         </SafeAreaView>
     );
 };
@@ -192,6 +192,20 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 20,
     },
+    footer: {
+        padding: 15,
+        backgroundColor: "#6200EE",
+        alignItems: "center" as "center",
+      },
+      footerText: {
+        color: "#fff",
+        fontSize: 12,
+      },
+      footerLink: {
+        color: "#FFDD57",
+        fontSize: 12,
+        marginTop: 5,
+      },
 });
 
 export default StudentMainPage;

@@ -88,7 +88,7 @@ const TeacherMainPage = () => {
     }, [sTeacherId]);
 
     const vChats = [
-        { id: 'broadcast', name: 'Tanári csevegő', lastMessage: 'Nem működik még' }, 
+        { id: 'broadcast', name: 'Tanári csevegő', lastMessage: 'Nem működik még' },
         ...vStudents.map(oStudent => ({
             id: oStudent.id,
             name: `${oStudent.firstName} ${oStudent.lastName}`,
@@ -105,7 +105,7 @@ const TeacherMainPage = () => {
             <Text style={styles.lastMessage}>{item.lastMessage}</Text>
         </TouchableOpacity>
     );
-    
+
 
     if (loading) {
         return (
@@ -117,20 +117,24 @@ const TeacherMainPage = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.headerText}>Tanár csevegő</Text>
-                <TouchableOpacity style={styles.profileButton} onPress={() => router.replace('/(auth)/ProfilePage')}>
-                    <Image source={require('./img/profile.png')} style={styles.profileImage} />
-                </TouchableOpacity>
+            <View style={styles.container}>
+                <View style={styles.header}>
+                    <Text style={styles.headerText}>Tanár csevegő</Text>
+                    <TouchableOpacity style={styles.profileButton} onPress={() => router.replace('/(auth)/ProfilePage')}>
+                        <Image source={require('./img/profile.png')} style={styles.profileImage} />
+                    </TouchableOpacity>
+                </View>
+                <FlatList
+                    data={vChats}
+                    renderItem={fRenderChatItem}
+                    keyExtractor={(item) => item.id.toString() || item.name}
+                    style={styles.chatList}
+                />
             </View>
-            <FlatList 
-                data={vChats} 
-                renderItem={fRenderChatItem} 
-                keyExtractor={(item) => item.id.toString() || item.name} 
-                style={styles.chatList} 
-            />
-        </View>
+            <View style={styles.footer}>
+                <Text style={styles.footerText}>© 2025 Tanár-diák chat app</Text>
+                <Text style={styles.footerLink}>Minden jog fenntartva.</Text>
+            </View>
         </SafeAreaView>
     );
 };
@@ -195,6 +199,20 @@ const styles = StyleSheet.create({
         fontSize: 18,
         textAlign: 'center',
         marginTop: 20,
+    },
+    footer: {
+        padding: 15,
+        backgroundColor: "#6200EE",
+        alignItems: "center" as "center",
+    },
+    footerText: {
+        color: "#fff",
+        fontSize: 12,
+    },
+    footerLink: {
+        color: "#FFDD57",
+        fontSize: 12,
+        marginTop: 5,
     },
 });
 

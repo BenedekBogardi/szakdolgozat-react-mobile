@@ -8,7 +8,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 const socket = io("http://192.168.100.4:3002");
 
-export default function LoggedInStudent() {
+export default function ChatPageGeneral() {
   const [username, setUsername] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [message, setMessage] = useState("");
@@ -47,7 +47,7 @@ export default function LoggedInStudent() {
     fetchTokenAndProfile();
   }, []);
 
-  const fetchUserProfile = async (authToken: string) => { 
+  const fetchUserProfile = async (authToken: string) => {
     try {
       setLoading(true);
       let response = await fetch("http://192.168.100.4:3000/auth/self", {
@@ -96,7 +96,7 @@ export default function LoggedInStudent() {
 
   useEffect(() => {
     if (!username || !userData) return;
-    socket.emit("joinChat", { roomName: "broadcastStudents", user: { id: userData.id, name: username, socketId: socket.id } });
+    socket.emit("joinChat", { roomName: "broadcastTeachers", user: { id: userData.id, name: username, socketId: socket.id } });
 
     /*socket.on("user-joined", (data) => {
       setMessages((prevMessages) => [...prevMessages, { text: data.message, self: false, username: data.username }]);
@@ -132,10 +132,10 @@ export default function LoggedInStudent() {
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => { router.replace('/(auth)/StudentMainPage') }}>
+          <TouchableOpacity style={styles.backButton} onPress={() => { router.replace('/(auth)/TeacherMainPage') }}>
             <AntDesign name="leftcircleo" style={styles.iconStyle} />
           </TouchableOpacity>
-          <Text style={styles.headerText}>Diák csevegő</Text>
+          <Text style={styles.headerText}>Tanár csevegő</Text>
           <TouchableOpacity style={styles.profileButton} onPress={() => { router.replace('/(auth)/ProfilePage') }}>
             <Image source={require('./img/profile.png')} style={styles.profileImage} />
           </TouchableOpacity>
