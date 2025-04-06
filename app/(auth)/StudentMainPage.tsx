@@ -5,8 +5,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const StudentMainPage = () => {
-    const [vTeacher, vSetTeacher] = useState<{ id: string; firstName: string; lastName: string; lastMessage?: string }[]>([]);
+    const [vTeacher, vSetTeacher] = useState<{ id: string; firstName: string; lastName: string; lastMessage?: string } | null>(null);
     const [sStudentId, sSetStudentId] = useState<string | null>(null);
+    const [csTeacherId, setCsTeacherId] = useState<number>(0);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -39,6 +40,7 @@ const StudentMainPage = () => {
 
                 const oData = await oResponse.json();
                 sSetStudentId(oData.id);
+                setCsTeacherId(oData.sTeacherId)
             } catch (oError) {
                 console.error("Error fetching student ID:", oError);
             } finally {
@@ -49,43 +51,46 @@ const StudentMainPage = () => {
         fFetchStudentId();
     }, []);
 
-    const fFetchUsers = async () => {
+    const fFetchTeacherOfStudent = async (nTeacherId: number) => {
         try {
-            const oResponse = await fetch("http://192.168.100.4:3000/users/selectTeacher", { //-------?
+            const oResponse = await fetch(`http://192.168.100.4:3000/users/teachers/${nTeacherId}`, {
                 method: "GET",
-                /*headers: {
+                headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({
-                    id: id,
-                }),*/
             });
-
+    
             if (!oResponse.ok) {
                 throw new Error(`HTTP error! Status: ${oResponse.status}`);
             }
-
-            const aTeacher = await oResponse.json();
-            vSetTeacher(aTeacher);
+    
+            const oTeacher = await oResponse.json();
+            vSetTeacher(oTeacher)
+            console.log("Tanár adatai:" + oTeacher.firstName + oTeacher.lastName)
+            //vSetTeacher(Array.isArray(oTeacher) ? oTeacher : [oTeacher]);
         } catch (oError) {
-            console.error("Error fetching users:", oError);
+            console.error("Error fetching teacher user:", oError);
         }
     };
 
     useEffect(() => {
-        if (sStudentId) {
-            fFetchUsers();
+        if (typeof csTeacherId === "number" && csTeacherId > 0) {
+            console.log("Működik")
+            fFetchTeacherOfStudent(csTeacherId);
         }
-    }, [sStudentId]);
+        else{
+            console.log("as")
+        }
+    }, [csTeacherId]);
 
     const vChats = [
-        { id: 'broadcast', name: 'Diákok - csevegő', lastMessage: 'Nem működik még' }, 
-        ...vTeacher.map(oStudent => ({
-            id: oStudent.id,
-            name: `${oStudent.firstName} ${oStudent.lastName}`,
-            lastMessage: oStudent.lastMessage || "Nincs üzenet",
-        }))
-    ];
+        { id: 'broadcast', name: 'Diákok - csevegő', lastMessage: 'Nem működik még' },
+        vTeacher ? {
+            id: vTeacher.id,
+            name: `${vTeacher.firstName} ${vTeacher.lastName}`,
+            lastMessage: vTeacher.lastMessage || "Nincs üzenet",
+        } : null
+    ].filter(Boolean);
 
     const fRenderChatItem = ({ item }) => (
         <TouchableOpacity
