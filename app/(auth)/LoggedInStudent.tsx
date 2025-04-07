@@ -18,6 +18,7 @@ export default function LoggedInStudent() {
   const [error, setError] = useState<string>("");
 
   const [messages, setMessages] = useState<Array<{ text: string; self: boolean; username: string }>>([]);
+  const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
     const fetchTokenAndProfile = async () => {
@@ -96,28 +97,31 @@ export default function LoggedInStudent() {
 
   useEffect(() => {
     if (!username || !userData) return;
-    socket.emit("joinChat", { roomName: "broadcastStudents", user: { id: userData.id, name: username, socketId: socket.id } });
+    const roomName = userData.role === "Teacher" ? "broadcastTeachers" : "broadcastStudents";
+    console.log(roomName)
 
-    /*socket.on("user-joined", (data) => {
+    socket.emit("joinChat", { roomName, user: { id: userData.id, name: username, role: userData.role, socketId: socket.id } });
+  
+    socket.on("user-joined", (data) => {
       setMessages((prevMessages) => [...prevMessages, { text: data.message, self: false, username: data.username }]);
     });
-
+  
     socket.on("user-left", (data) => {
       setMessages((prevMessages) => [...prevMessages, { text: data.message, self: false, username: data.username }]);
-    });*/
-
+    });
+  
     socket.on("message", (msg) => {
       if (msg.username !== username) {
         setMessages((prevMessages) => [...prevMessages, { text: msg.text, self: false, username: msg.username }]);
       }
     });
-
+  
     return () => {
-      /*socket.off("user-joined");
-      socket.off("user-left");*/
+      socket.off("user-joined");
+      socket.off("user-left");
       socket.off("message");
     };
-  }, [username]);
+  }, [username, userData]);
 
   const sendMessage = () => {
     if (message.trim()) {
@@ -127,6 +131,12 @@ export default function LoggedInStudent() {
       setMessage("");
     }
   };
+
+  useEffect(() => {
+    if (flatListRef.current) {
+      flatListRef.current.scrollToEnd({ animated: true });
+    }
+  }, [messages]);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -140,7 +150,7 @@ export default function LoggedInStudent() {
             <Image source={require('./img/profile.png')} style={styles.profileImage} />
           </TouchableOpacity>
         </View>
-  
+
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#6200EE" />
@@ -148,6 +158,7 @@ export default function LoggedInStudent() {
         ) : isLoggedIn ? (
           <>
             <FlatList
+              ref={flatListRef}
               data={messages}
               renderItem={({ item }) => (
                 <View style={[styles.message, item.self ? styles.selfMessage : styles.otherMessage]}>
@@ -164,7 +175,7 @@ export default function LoggedInStudent() {
                 style={styles.input}
                 value={message}
                 onChangeText={setMessage}
-                placeholder="Start typing..."
+                placeholder="Kezdjen el írni..."
                 autoComplete="off"
               />
               {message.trim() !== '' && (

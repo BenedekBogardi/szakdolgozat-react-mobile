@@ -95,29 +95,33 @@ export default function App() {
   }, [message]);
 
   useEffect(() => {
-    if (!username || !userData) return;
-    socket.emit("joinChat", { roomName: "broadcastTeachers", user: { id: userData.id, name: username, socketId: socket.id } });
-
-    /*socket.on("user-joined", (data) => {
-      setMessages((prevMessages) => [...prevMessages, { text: data.message, self: false, username: data.username }]);
-    });
-
-    socket.on("user-left", (data) => {
-      setMessages((prevMessages) => [...prevMessages, { text: data.message, self: false, username: data.username }]);
-    });*/
-
-    socket.on("message", (msg) => {
-      if (msg.username !== username) {
-        setMessages((prevMessages) => [...prevMessages, { text: msg.text, self: false, username: msg.username }]);
-      }
-    });
-
-    return () => {
-      /*socket.off("user-joined");
-      socket.off("user-left");*/
-      socket.off("message");
-    };
-  }, [username]);
+      if (!username || !userData) return;
+    
+      const roomName = userData.role === "Teacher" ? "broadcastTeachers" : "broadcastStudents";
+      console.log(roomName)
+      socket.emit("joinChat", { roomName, user: { id: userData.id, name: username, socketId: socket.id, role: userData.role  } });
+    
+      socket.on("user-joined", (data) => {
+        setMessages((prevMessages) => [...prevMessages, { text: data.message, self: false, username: data.username }]);
+      });
+    
+      socket.on("user-left", (data) => {
+        setMessages((prevMessages) => [...prevMessages, { text: data.message, self: false, username: data.username }]);
+      });
+    
+      socket.on("message", (msg) => {
+        if (msg.username !== username) {
+          
+          setMessages((prevMessages) => [...prevMessages, { text: msg.text, self: false, username: msg.username }]);
+        }
+      });
+    
+      return () => {
+        socket.off("user-joined");
+        socket.off("user-left");
+        socket.off("message");
+      };
+    }, [username, userData]);
 
   const sendMessage = () => {
     if (message.trim()) {
@@ -164,7 +168,7 @@ export default function App() {
                 style={styles.input}
                 value={message}
                 onChangeText={setMessage}
-                placeholder="Start typing..."
+                placeholder="Kezdjen el írni..."
                 autoComplete="off"
               />
               {message.trim() !== '' && (

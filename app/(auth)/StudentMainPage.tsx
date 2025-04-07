@@ -67,7 +67,6 @@ const StudentMainPage = () => {
             const oTeacher = await oResponse.json();
             vSetTeacher(oTeacher)
             console.log("Tanár adatai:" + oTeacher.firstName + oTeacher.lastName)
-            //vSetTeacher(Array.isArray(oTeacher) ? oTeacher : [oTeacher]);
         } catch (oError) {
             console.error("Error fetching teacher user:", oError);
         }
