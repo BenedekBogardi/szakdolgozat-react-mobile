@@ -5,6 +5,7 @@ import io from "socket.io-client";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useLocalSearchParams } from 'expo-router';
 
 const socket = io("http://192.168.100.4:3002");
 
@@ -16,8 +17,9 @@ export default function ChatPageGeneral() {
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
-
+  const { teacherId, studentId } = useLocalSearchParams();
   const [messages, setMessages] = useState<Array<{ text: string; self: boolean; username: string }>>([]);
+  const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
     const fetchTokenAndProfile = async () => {
@@ -73,7 +75,7 @@ export default function ChatPageGeneral() {
       console.log("Fetch error:", error);
       setError("Unable to fetch user data.");
     }
-    finally{
+    finally {
       setLoading(false);
     }
   };
@@ -95,52 +97,93 @@ export default function ChatPageGeneral() {
   }, [message]);
 
   useEffect(() => {
-    if (!username || !userData) return;
-    socket.emit("joinChat", { roomName: "broadcastTeachers", user: { id: userData.id, name: username, socketId: socket.id } });
+    if (!username || !userData || !teacherId || !studentId) return;
 
-    /*socket.on("user-joined", (data) => {
-      setMessages((prevMessages) => [...prevMessages, { text: data.message, self: false, username: data.username }]);
+    const roomName = `teacher_${teacherId}_student_${studentId}`;
+    console.log("Joining private room:", roomName);
+
+    socket.emit("joinPrivateRoom", {
+      roomName: roomName,
+      user: {
+        id: userData.id,
+        name: username,
+        role: userData.role,
+        socketId: socket.id,
+      },
+    });
+
+    socket.on("user-joined", (data) => {
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: data.message, self: false, username: data.username },
+      ]);
     });
 
     socket.on("user-left", (data) => {
-      setMessages((prevMessages) => [...prevMessages, { text: data.message, self: false, username: data.username }]);
-    });*/
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: data.message, self: false, username: data.username },
+      ]);
+    });
 
     socket.on("message", (msg) => {
       if (msg.username !== username) {
-        setMessages((prevMessages) => [...prevMessages, { text: msg.text, self: false, username: msg.username }]);
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { text: msg.text, self: false, username: msg.username },
+        ]);
       }
     });
 
     return () => {
-      /*socket.off("user-joined");
-      socket.off("user-left");*/
+      socket.off("user-joined");
+      socket.off("user-left");
       socket.off("message");
     };
-  }, [username]);
+  }, [username, userData, teacherId, studentId]);
 
   const sendMessage = () => {
     if (message.trim()) {
-      console.log("Emitting message:", { username, text: message });
-      socket.emit("newMessage", { username, text: message });
+      const roomName = `teacher_${teacherId}_student_${studentId}`;
+      console.log("Emitting message:", { username, text: message, roomName });
+
+      socket.emit("newMessage", { username, text: message, roomName });
+
       setMessages((prevMessages) => [...prevMessages, { text: message, self: true, username }]);
       setMessage("");
     }
   };
 
+  useEffect(() => {
+    if (flatListRef.current) {
+      flatListRef.current.scrollToEnd({ animated: true });
+    }
+  }, [messages]);
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => { router.replace('/(auth)/TeacherMainPage') }}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => {
+              if (userData?.role === 'Teacher') {
+                router.replace('/(auth)/TeacherMainPage');
+              } else if (userData?.role === 'Student') {
+                router.replace('/(auth)/StudentMainPage');
+              } else {
+                console.warn("Unknown role, cannot navigate back properly.");
+              }
+            }}
+          >
             <AntDesign name="leftcircleo" style={styles.iconStyle} />
           </TouchableOpacity>
-          <Text style={styles.headerText}>Tanár csevegő</Text>
+          <Text style={styles.headerText}>Diák csevegő</Text>
           <TouchableOpacity style={styles.profileButton} onPress={() => { router.replace('/(auth)/ProfilePage') }}>
             <Image source={require('./img/profile.png')} style={styles.profileImage} />
           </TouchableOpacity>
         </View>
-  
+
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#6200EE" />
@@ -148,6 +191,7 @@ export default function ChatPageGeneral() {
         ) : isLoggedIn ? (
           <>
             <FlatList
+              ref={flatListRef}
               data={messages}
               renderItem={({ item }) => (
                 <View style={[styles.message, item.self ? styles.selfMessage : styles.otherMessage]}>
@@ -164,7 +208,7 @@ export default function ChatPageGeneral() {
                 style={styles.input}
                 value={message}
                 onChangeText={setMessage}
-                placeholder="Start typing..."
+                placeholder="Kezdjen el írni..."
                 autoComplete="off"
               />
               {message.trim() !== '' && (

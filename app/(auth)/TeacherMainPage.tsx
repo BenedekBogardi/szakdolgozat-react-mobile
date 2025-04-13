@@ -8,6 +8,7 @@ const TeacherMainPage = () => {
     const [vStudents, vSetStudents] = useState<{ id: string; firstName: string; lastName: string; lastMessage?: string }[]>([]);
     const [sTeacherId, sSetTeacherId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
+    const [sStudentId, setSStudentId] = useState<string | null>(null);
 
     useEffect(() => {
         const fFetchTeacherId = async () => {
@@ -75,6 +76,7 @@ const TeacherMainPage = () => {
             }
 
             const aUsers = await oResponse.json();
+            console.log("Fetched students:", JSON.stringify(aUsers, null, 2));
             vSetStudents(aUsers);
         } catch (oError) {
             console.error("Error fetching users:", oError);
@@ -96,15 +98,41 @@ const TeacherMainPage = () => {
         }))
     ];
 
-    const fRenderChatItem = ({ item }) => (
-        <TouchableOpacity
+    useEffect(() => {
+        const loadStudentId = async () => {
+          try {
+            const id = await AsyncStorage.getItem("studentId");
+            if (id !== null) {
+              setSStudentId(id);
+            }
+          } catch (error) {
+            console.log("Hiba a studentId beolvasásakor:", error);
+          }
+        };
+      
+        loadStudentId();
+      }, []);
+
+    const fRenderChatItem = ({ item }) => {
+        const isBroadcast = item.id === 'broadcast';
+      
+        if (!sTeacherId) return null;
+      
+        return (
+          <TouchableOpacity
             style={styles.chatItem}
-            onPress={() => router.replace(`/(auth)/LoggedInTeacher?room=${item.id}`)}
-        >
+            onPress={() =>
+              isBroadcast
+                ? router.replace(`/(auth)/LoggedInTeacher?room=${item.id}`)
+                : router.replace(`/(auth)/ChatPageGeneral?teacherId=${item.id}&studentId=${sTeacherId}`)
+            }
+          >
             <Text style={styles.chatName}>{item.name}</Text>
             <Text style={styles.lastMessage}>{item.lastMessage}</Text>
-        </TouchableOpacity>
-    );
+          </TouchableOpacity>
+        );
+      };
+    
 
 
     if (loading) {

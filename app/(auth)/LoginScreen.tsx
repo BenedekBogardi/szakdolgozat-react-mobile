@@ -57,6 +57,9 @@ export default function LoginScreen() {
         if (roleResponse.ok) {
           if (roleData && roleData.role) {
             await AsyncStorage.setItem("roleData", JSON.stringify(roleData));
+            if(roleData.role === "Student") {
+              await AsyncStorage.setItem("studentId", JSON.stringify(roleData.id))
+            }
             console.log("RoleData stored in AsyncStorage:", roleData);
 
             if (roleData.role === "Teacher") {

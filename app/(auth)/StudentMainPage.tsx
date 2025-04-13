@@ -9,6 +9,8 @@ const StudentMainPage = () => {
     const [sStudentId, sSetStudentId] = useState<string | null>(null);
     const [csTeacherId, setCsTeacherId] = useState<number>(0);
     const [loading, setLoading] = useState(true);
+    const [sStudentIds, setSStudentId] = useState<string | null>(null);
+    const [sTeacherId, sSetTeacherId] = useState<string | null>(null);
 
     useEffect(() => {
         const fFetchStudentId = async () => {
@@ -40,6 +42,7 @@ const StudentMainPage = () => {
 
                 const oData = await oResponse.json();
                 sSetStudentId(oData.id);
+                sSetTeacherId(JSON.stringify(oData.id))
                 setCsTeacherId(oData.sTeacherId)
             } catch (oError) {
                 console.error("Error fetching student ID:", oError);
@@ -87,15 +90,41 @@ const StudentMainPage = () => {
         } : null
     ].filter(Boolean);
 
-    const fRenderChatItem = ({ item }) => (
-        <TouchableOpacity
-            style={styles.chatItem}
-            onPress={() => router.replace(`/(auth)/LoggedInStudent?room=${item.id}`)}
-        >
-            <Text style={styles.chatName}>{item.name}</Text>
-            <Text style={styles.lastMessage}>{item.lastMessage}</Text>
-        </TouchableOpacity>
-    );
+    useEffect(() => {
+        const loadStudentId = async () => {
+            try {
+                const id = await AsyncStorage.getItem("studentId");
+                if (id !== null) {
+                    setSStudentId(id);
+                }
+            } catch (error) {
+                console.log("Error loading studentId:", error);
+            }
+        };
+    
+        loadStudentId();
+    }, []);
+
+    const fRenderChatItem = ({ item }) => {
+        const isBroadcast = item.id === 'broadcast';
+        console.log("item ID: " + item.id)
+        console.log("steacher ID: " + sTeacherId)
+        return (
+            
+            <TouchableOpacity
+                style={styles.chatItem}
+                onPress={() =>
+                    isBroadcast
+                        ? router.replace(`/(auth)/LoggedInStudent?room=${item.id}`)
+                        : router.replace(`/(auth)/ChatPageGeneral?teacherId=${sTeacherId}&studentId=${item.id}`)
+                }
+            >
+                <Text style={styles.chatName}>{item.name}</Text>
+                <Text style={styles.lastMessage}>{item.lastMessage}</Text>
+            </TouchableOpacity>
+        );
+    };
+    
 
 
     if (loading) {
