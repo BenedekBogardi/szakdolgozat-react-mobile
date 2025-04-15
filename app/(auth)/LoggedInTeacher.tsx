@@ -6,7 +6,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const socket = io("http://192.168.100.4:3002");
+const socket = io("http://0.0.0.0:3002");
 
 export default function App() {
   const [username, setUsername] = useState("");
@@ -51,7 +51,7 @@ export default function App() {
   const fetchUserProfile = async (authToken: string) => {
     try {
       setLoading(true);
-      let response = await fetch("http://192.168.100.4:3000/auth/self", {
+      let response = await fetch("http://0.0.0.0:3000/auth/self", {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${authToken}`,

@@ -42,7 +42,7 @@ export default function ProfilePage() {
     const fetchUserProfile = async (authToken: string) => {
         try {
             setLoading(true);
-            let response = await fetch("http://192.168.100.4:3000/auth/self", {
+            let response = await fetch("http://0.0.0.0:3000/auth/self", {
                 method: "GET",
                 headers: {
                     "Authorization": `Bearer ${authToken}`,
@@ -81,7 +81,7 @@ export default function ProfilePage() {
     };
 
     const handleLogoutAnimation = () => {
-        Animated.sequence([ 
+        Animated.sequence([
             Animated.spring(scaleAnim, {
                 toValue: 1.1,
                 friction: 3,

@@ -29,7 +29,7 @@ const StudentMainPage = () => {
                     return;
                 }
 
-                const oResponse = await fetch("http://192.168.100.4:3000/auth/self", {
+                const oResponse = await fetch("http://0.0.0.0:3000/auth/self", {
                     method: "GET",
                     headers: {
                         "Authorization": `Bearer ${sToken}`,
@@ -56,7 +56,7 @@ const StudentMainPage = () => {
 
     const fFetchTeacherOfStudent = async (nTeacherId: number) => {
         try {
-            const oResponse = await fetch(`http://192.168.100.4:3000/users/teachers/${nTeacherId}`, {
+            const oResponse = await fetch(`http://0.0.0.0:3000/users/teachers/${nTeacherId}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -101,7 +101,7 @@ const StudentMainPage = () => {
                 console.log("Error loading studentId:", error);
             }
         };
-    
+
         loadStudentId();
     }, []);
 
@@ -110,7 +110,7 @@ const StudentMainPage = () => {
         console.log("item ID: " + item.id)
         console.log("steacher ID: " + sTeacherId)
         return (
-            
+
             <TouchableOpacity
                 style={styles.chatItem}
                 onPress={() =>
@@ -124,7 +124,7 @@ const StudentMainPage = () => {
             </TouchableOpacity>
         );
     };
-    
+
 
 
     if (loading) {
@@ -224,16 +224,16 @@ const styles = StyleSheet.create({
         padding: 15,
         backgroundColor: "#6200EE",
         alignItems: "center" as "center",
-      },
-      footerText: {
+    },
+    footerText: {
         color: "#fff",
         fontSize: 12,
-      },
-      footerLink: {
+    },
+    footerLink: {
         color: "#FFDD57",
         fontSize: 12,
         marginTop: 5,
-      },
+    },
 });
 
 export default StudentMainPage;

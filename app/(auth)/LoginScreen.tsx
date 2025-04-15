@@ -36,7 +36,7 @@ export default function LoginScreen() {
 
     setBBetolt(true);
     try {
-      let response = await fetch("http://192.168.100.4:3000/auth/login", {
+      let response = await fetch("http://0.0.0.0:3000/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: strEmail, password: strJelszo }),
@@ -50,7 +50,7 @@ export default function LoginScreen() {
           return;
         }
 
-        let roleResponse = await fetch("http://192.168.100.4:3000/auth/self", {
+        let roleResponse = await fetch("http://0.0.0.0:3000/auth/self", {
           method: "GET",
           headers: { "Authorization": `Bearer ${data.token}` },
         });
@@ -144,7 +144,7 @@ export default function LoginScreen() {
           <Text style={styles.footerLink}>Minden jog fenntartva.</Text>
         </View>
 
-        <Toast position="top"/>
+        <Toast position="top" />
       </View>
     </KeyboardAvoidingView>
   );

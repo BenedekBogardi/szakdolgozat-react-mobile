@@ -6,7 +6,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const socket = io("http://192.168.100.4:3002");
+const socket = io("http://0.0.0.0:3002");
 
 export default function LoggedInStudent() {
   const [username, setUsername] = useState("");
@@ -48,10 +48,10 @@ export default function LoggedInStudent() {
     fetchTokenAndProfile();
   }, []);
 
-  const fetchUserProfile = async (authToken: string) => { 
+  const fetchUserProfile = async (authToken: string) => {
     try {
       setLoading(true);
-      let response = await fetch("http://192.168.100.4:3000/auth/self", {
+      let response = await fetch("http://0.0.0.0:3000/auth/self", {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${authToken}`,
@@ -74,7 +74,7 @@ export default function LoggedInStudent() {
       console.log("Fetch error:", error);
       setError("Unable to fetch user data.");
     }
-    finally{
+    finally {
       setLoading(false);
     }
   };
@@ -101,21 +101,21 @@ export default function LoggedInStudent() {
     console.log(roomName)
 
     socket.emit("joinChat", { roomName, user: { id: userData.id, name: username, role: userData.role, socketId: socket.id } });
-  
+
     socket.on("user-joined", (data) => {
       setMessages((prevMessages) => [...prevMessages, { text: data.message, self: false, username: data.username }]);
     });
-  
+
     socket.on("user-left", (data) => {
       setMessages((prevMessages) => [...prevMessages, { text: data.message, self: false, username: data.username }]);
     });
-  
+
     socket.on("message", (msg) => {
       if (msg.username !== username) {
         setMessages((prevMessages) => [...prevMessages, { text: msg.text, self: false, username: msg.username }]);
       }
     });
-  
+
     return () => {
       socket.off("user-joined");
       socket.off("user-left");

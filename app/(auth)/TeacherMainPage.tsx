@@ -27,7 +27,7 @@ const TeacherMainPage = () => {
                     return;
                 }
 
-                const oResponse = await fetch("http://192.168.100.4:3000/auth/self", {
+                const oResponse = await fetch("http://0.0.0.0:3000/auth/self", {
                     method: "GET",
                     headers: {
                         "Authorization": `Bearer ${sToken}`,
@@ -56,7 +56,7 @@ const TeacherMainPage = () => {
             const sToken = await AsyncStorage.getItem(`userToken_${sUserId}`);
             if (!sUserId || !sToken || !sTeacherId) return;
 
-            const oResponse = await fetch("http://192.168.100.4:3000/users/students", {
+            const oResponse = await fetch("http://0.0.0.0:3000/users/students", {
                 headers: { "Authorization": `Bearer ${sToken}` },
             });
 
@@ -68,7 +68,7 @@ const TeacherMainPage = () => {
                 aStudents.map(async (oStudent) => {
                     const sRoomName = `teacher_${sTeacherId}_student_${oStudent.id}`;
                     try {
-                        const oMsgRes = await fetch(`http://192.168.100.4:3000/chat/rooms/${sRoomName}`, {
+                        const oMsgRes = await fetch(`http://0.0.0.0:3000/chat/rooms/${sRoomName}`, {
                             headers: { "Authorization": `Bearer ${sToken}` },
                         });
 

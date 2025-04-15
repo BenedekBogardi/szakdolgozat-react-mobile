@@ -7,7 +7,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams } from 'expo-router';
 
-const socket = io("http://192.168.100.4:3002");
+const socket = io("http://0.0.0.0:3002");
 
 export default function ChatPageGeneral() {
   const [username, setUsername] = useState("");
@@ -20,6 +20,7 @@ export default function ChatPageGeneral() {
   const { teacherId, studentId } = useLocalSearchParams();
   const [messages, setMessages] = useState<Array<{ text: string; self: boolean; username: string }>>([]);
   const flatListRef = useRef<FlatList>(null);
+
 
   useEffect(() => {
     const fetchTokenAndProfile = async () => {
@@ -52,7 +53,7 @@ export default function ChatPageGeneral() {
   const fetchUserProfile = async (authToken: string) => {
     try {
       setLoading(true);
-      let response = await fetch("http://192.168.100.4:3000/auth/self", {
+      let response = await fetch("http://0.0.0.0:3000/auth/self", {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${authToken}`,
@@ -80,6 +81,7 @@ export default function ChatPageGeneral() {
     }
   };
 
+
   useEffect(() => {
     if (message.trim() === '') {
       Animated.timing(fadeAnim, {
@@ -95,6 +97,7 @@ export default function ChatPageGeneral() {
       }).start();
     }
   }, [message]);
+
 
   useEffect(() => {
     if (!username || !userData || !teacherId || !studentId) return;
