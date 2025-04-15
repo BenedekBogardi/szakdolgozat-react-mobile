@@ -127,6 +127,7 @@ export default function ChatPageGeneral() {
     });
 
     socket.on("message", (msg) => {
+      console.log("Received message from socket:", msg);
       if (msg.username !== username) {
         setMessages((prevMessages) => [
           ...prevMessages,

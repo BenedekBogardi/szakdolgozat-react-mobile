@@ -116,7 +116,7 @@ const StudentMainPage = () => {
                 onPress={() =>
                     isBroadcast
                         ? router.replace(`/(auth)/LoggedInStudent?room=${item.id}`)
-                        : router.replace(`/(auth)/ChatPageGeneral?teacherId=${sTeacherId}&studentId=${item.id}`)
+                        : router.replace(`/(auth)/ChatPageGeneral?teacherId=${item.id}&studentId=${sTeacherId}`)
                 }
             >
                 <Text style={styles.chatName}>{item.name}</Text>
@@ -139,7 +139,7 @@ const StudentMainPage = () => {
         <SafeAreaView style={styles.container}>
             <View style={styles.container}>
                 <View style={styles.header}>
-                    <Text style={styles.headerText}>Diák csevegő</Text>
+                    <Text style={styles.headerText}>BrainBoost - Diák csevegő</Text>
                     <TouchableOpacity style={styles.profileButton} onPress={() => router.replace('/(auth)/ProfilePage')}>
                         <Image source={require('./img/profile.png')} style={styles.profileImage} />
                     </TouchableOpacity>

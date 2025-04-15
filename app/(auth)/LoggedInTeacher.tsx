@@ -16,6 +16,7 @@ export default function App() {
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
+  const flatListRef = useRef<FlatList>(null);
 
   const [messages, setMessages] = useState<Array<{ text: string; self: boolean; username: string }>>([]);
 
@@ -72,13 +73,57 @@ export default function App() {
     } catch (error) {
       console.log("Fetch error:", error);
       setError("Unable to fetch user data.");
-    }
-    finally{
+    } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    if (!userData || !username) return;
+
+    const roomName = userData.role === "Teacher" ? "broadcastTeachers" : "broadcastStudents";
+    console.log(roomName)
+    socket.emit("joinChat", { roomName, user: { id: userData.id, name: username, socketId: socket.id, role: userData.role } });
+    socket.on("user-joined", (data) => {
+      setMessages((prevMessages) => [...prevMessages, { text: data.message, self: false, username: data.username }]);
+    });
+
+    socket.on("user-left", (data) => {
+      setMessages((prevMessages) => [...prevMessages, { text: data.message, self: false, username: data.username }]);
+    });
+
+    socket.on("message", (msg) => {
+      if (msg.username !== username) {
+        setMessages((prevMessages) => [...prevMessages, { text: msg.text, self: false, username: msg.username }]);
+      }
+    });
+
+    return () => {
+      socket.off("user-joined");
+      socket.off("user-left");
+      socket.off("message");
+    };
+  }, [username, userData]);
+
+  const sendMessage = () => {
+    if (message.trim()) {
+      const roomName = userData.role === "Teacher" ? "broadcastTeachers" : "broadcastStudents";
+      console.log("Emitting message:", { username, text: message, roomName });
+      setMessages((prevMessages) => [...prevMessages, { text: message, self: true, username }]);
+      socket.emit("newMessage", { username, text: message, roomName });
+      setMessage("");
+    }
+  };
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      setTimeout(() => {
+        if (flatListRef.current) {
+          flatListRef.current.scrollToEnd({ animated: true });
+        }
+      }, 100);
+    }
+
     if (message.trim() === '') {
       Animated.timing(fadeAnim, {
         toValue: 0,
@@ -92,45 +137,7 @@ export default function App() {
         useNativeDriver: true,
       }).start();
     }
-  }, [message]);
-
-  useEffect(() => {
-      if (!username || !userData) return;
-    
-      const roomName = userData.role === "Teacher" ? "broadcastTeachers" : "broadcastStudents";
-      console.log(roomName)
-      socket.emit("joinChat", { roomName, user: { id: userData.id, name: username, socketId: socket.id, role: userData.role  } });
-    
-      socket.on("user-joined", (data) => {
-        setMessages((prevMessages) => [...prevMessages, { text: data.message, self: false, username: data.username }]);
-      });
-    
-      socket.on("user-left", (data) => {
-        setMessages((prevMessages) => [...prevMessages, { text: data.message, self: false, username: data.username }]);
-      });
-    
-      socket.on("message", (msg) => {
-        if (msg.username !== username) {
-          
-          setMessages((prevMessages) => [...prevMessages, { text: msg.text, self: false, username: msg.username }]);
-        }
-      });
-    
-      return () => {
-        socket.off("user-joined");
-        socket.off("user-left");
-        socket.off("message");
-      };
-    }, [username, userData]);
-
-  const sendMessage = () => {
-    if (message.trim()) {
-      console.log("Emitting message:", { username, text: message });
-      socket.emit("newMessage", { username, text: message });
-      setMessages((prevMessages) => [...prevMessages, { text: message, self: true, username }]);
-      setMessage("");
-    }
-  };
+  }, [messages, message]);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -144,7 +151,7 @@ export default function App() {
             <Image source={require('./img/profile.png')} style={styles.profileImage} />
           </TouchableOpacity>
         </View>
-  
+
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#6200EE" />
@@ -152,6 +159,7 @@ export default function App() {
         ) : isLoggedIn ? (
           <>
             <FlatList
+              ref={flatListRef}
               data={messages}
               renderItem={({ item }) => (
                 <View style={[styles.message, item.self ? styles.selfMessage : styles.otherMessage]}>
@@ -162,6 +170,7 @@ export default function App() {
               keyExtractor={(item, index) => index.toString()}
               style={styles.messageList}
             />
+
             <View style={{ width: 425, justifyContent: 'center', alignItems: 'center', flexDirection: 'row', padding: 10 }}>
               <TextInput
                 id="MsgTxt"

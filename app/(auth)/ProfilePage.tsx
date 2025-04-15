@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Image, Animated, Alert } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Animated } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -68,6 +68,7 @@ export default function ProfilePage() {
     const handleLogout = async () => {
         await AsyncStorage.removeItem("userToken");
         await AsyncStorage.removeItem("currentUser");
+        console.log("Token törlésének tesztelése: " + await AsyncStorage.getItem("currentUser"))
         router.replace("/(auth)/LoginScreen");
     };
 
@@ -80,7 +81,7 @@ export default function ProfilePage() {
     };
 
     const handleLogoutAnimation = () => {
-        Animated.sequence([
+        Animated.sequence([ 
             Animated.spring(scaleAnim, {
                 toValue: 1.1,
                 friction: 3,
@@ -117,7 +118,7 @@ export default function ProfilePage() {
                     <TouchableOpacity onPress={handleBackPress}>
                         <AntDesign name="leftcircleo" style={styles.iconStyle} />
                     </TouchableOpacity>
-                    <Text style={styles.headerText}>Tanár-diák chat app</Text>
+                    <Text style={styles.headerText}>BrainBoost - Profilom</Text>
                 </View>
 
                 <View style={styles.profileSection}>
@@ -129,21 +130,22 @@ export default function ProfilePage() {
                     </Text>
                     <Text style={styles.profileDetail}>E-mail cím:{"\n"}</Text>
                     <Text style={styles.profileDetail}>{userData?.email}</Text>
+
                     <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-                    <TouchableOpacity
-                        style={styles.logoutButton}
-                        onPressIn={handleLogoutAnimation}
-                        onPress={handleLogout}
-                    >
-                        <Text style={styles.logoutText}>Logout</Text>
-                    </TouchableOpacity>
-                </Animated.View>
+                        <TouchableOpacity
+                            style={styles.logoutButton}
+                            onPressIn={handleLogoutAnimation}
+                            onPress={handleLogout}
+                        >
+                            <Text style={styles.logoutText}>Kijelentkezés</Text>
+                        </TouchableOpacity>
+                    </Animated.View>
                 </View>
+
                 <View style={styles.footer}>
                     <Text style={styles.footerText}>© 2025 Tanár-diák chat app</Text>
                     <Text style={styles.footerLink}>Minden jog fenntartva.</Text>
                 </View>
-                
             </View>
         </SafeAreaView>
     );
@@ -151,9 +153,11 @@ export default function ProfilePage() {
 
 const styles = StyleSheet.create({
     container: {
+        flex: 1,
         justifyContent: "center",
         alignItems: "center",
         backgroundColor: "#f5f5f5",
+        paddingBottom: 20,
     },
     header: {
         backgroundColor: '#6200EE',
@@ -179,25 +183,20 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         marginTop: 20,
-        padding: 20,
+        padding: 30,
         borderRadius: 10,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        shadowOpacity: 0.2,
+        shadowRadius: 6,
         flex: 1,
-        marginBottom: 10
-    },
-    profileImage: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        marginBottom: 15,
-        borderWidth: 2,
-        borderColor: "#6200EE",
+        marginBottom: 20,
+        backgroundColor: '#fff',
+        width: '90%',
+        elevation: 5,
     },
     profileText: {
-        fontSize: 24,
+        fontSize: 26,
         fontWeight: "bold",
         color: "#6200EE",
         marginBottom: 10,
@@ -206,7 +205,7 @@ const styles = StyleSheet.create({
         fontSize: 18,
         color: "#333",
         marginBottom: 10,
-        textAlign: "justify"
+        textAlign: "center",
     },
     errorText: {
         color: "red",
@@ -216,10 +215,12 @@ const styles = StyleSheet.create({
     logoutButton: {
         marginTop: 20,
         backgroundColor: "#FF6347",
-        padding: 10,
+        paddingVertical: 12,
+        paddingHorizontal: 30,
         borderRadius: 8,
         width: "80%",
         alignItems: "center",
+        elevation: 3,
     },
     logoutText: {
         color: "#fff",

@@ -53,33 +53,44 @@ const TeacherMainPage = () => {
     const fFetchUsers = async () => {
         try {
             const sUserId = await AsyncStorage.getItem("currentUser");
-            if (!sUserId) {
-                console.error("No logged-in user found");
-                return;
-            }
-
             const sToken = await AsyncStorage.getItem(`userToken_${sUserId}`);
-            if (!sToken) {
-                console.error("No token found for the logged-in user");
-                return;
-            }
+            if (!sUserId || !sToken || !sTeacherId) return;
 
             const oResponse = await fetch("http://192.168.100.4:3000/users/students", {
-                method: "GET",
-                headers: {
-                    "Authorization": `Bearer ${sToken}`,
-                },
+                headers: { "Authorization": `Bearer ${sToken}` },
             });
 
-            if (!oResponse.ok) {
-                throw new Error(`HTTP error! Status: ${oResponse.status}`);
-            }
+            if (!oResponse.ok) throw new Error(`HTTP error! Status: ${oResponse.status}`);
 
-            const aUsers = await oResponse.json();
-            console.log("Fetched students:", JSON.stringify(aUsers, null, 2));
-            vSetStudents(aUsers);
+            const aStudents = await oResponse.json();
+
+            const aStudentsWithLastMessages = await Promise.all(
+                aStudents.map(async (oStudent) => {
+                    const sRoomName = `teacher_${sTeacherId}_student_${oStudent.id}`;
+                    try {
+                        const oMsgRes = await fetch(`http://192.168.100.4:3000/chat/rooms/${sRoomName}`, {
+                            headers: { "Authorization": `Bearer ${sToken}` },
+                        });
+
+                        console.log(`Fetching messages for room: ${sRoomName}`);
+                        const oMsgData = await oMsgRes.json();
+                        //console.log(`Message data for ${sRoomName}:`, oMsgData);
+                        return {
+                            ...oStudent,
+                            lastMessage: oMsgData?.lastMessage || "A diákod",
+                        };
+                    } catch {
+                        return {
+                            ...oStudent,
+                            lastMessage: "A diákod",
+                        };
+                    }
+                })
+            );
+
+            vSetStudents(aStudentsWithLastMessages);
         } catch (oError) {
-            console.error("Error fetching users:", oError);
+            console.error("Error fetching students or messages:", oError);
         }
     };
 
@@ -90,7 +101,7 @@ const TeacherMainPage = () => {
     }, [sTeacherId]);
 
     const vChats = [
-        { id: 'broadcast', name: 'Tanári csevegő', lastMessage: 'Nem működik még' },
+        { id: 'broadcast', name: 'Tanári csevegő', lastMessage: 'Csoportos csevegés' },
         ...vStudents.map(oStudent => ({
             id: oStudent.id,
             name: `${oStudent.firstName} ${oStudent.lastName}`,
@@ -100,40 +111,38 @@ const TeacherMainPage = () => {
 
     useEffect(() => {
         const loadStudentId = async () => {
-          try {
-            const id = await AsyncStorage.getItem("studentId");
-            if (id !== null) {
-              setSStudentId(id);
+            try {
+                const id = await AsyncStorage.getItem("studentId");
+                if (id !== null) {
+                    setSStudentId(id);
+                }
+            } catch (error) {
+                console.log("Hiba a studentId beolvasásakor:", error);
             }
-          } catch (error) {
-            console.log("Hiba a studentId beolvasásakor:", error);
-          }
         };
-      
+
         loadStudentId();
-      }, []);
+    }, []);
 
     const fRenderChatItem = ({ item }) => {
         const isBroadcast = item.id === 'broadcast';
-      
-        if (!sTeacherId) return null;
-      
-        return (
-          <TouchableOpacity
-            style={styles.chatItem}
-            onPress={() =>
-              isBroadcast
-                ? router.replace(`/(auth)/LoggedInTeacher?room=${item.id}`)
-                : router.replace(`/(auth)/ChatPageGeneral?teacherId=${item.id}&studentId=${sTeacherId}`)
-            }
-          >
-            <Text style={styles.chatName}>{item.name}</Text>
-            <Text style={styles.lastMessage}>{item.lastMessage}</Text>
-          </TouchableOpacity>
-        );
-      };
-    
 
+        if (!sTeacherId) return null;
+
+        return (
+            <TouchableOpacity
+                style={styles.chatItem}
+                onPress={() =>
+                    isBroadcast
+                        ? router.replace(`/(auth)/LoggedInTeacher?room=${item.id}`)
+                        : router.replace(`/(auth)/ChatPageGeneral?teacherId=${sTeacherId}&studentId=${item.id}`)
+                }
+            >
+                <Text style={styles.chatName}>{item.name}</Text>
+                <Text style={styles.lastMessage}>{item.lastMessage}</Text>
+            </TouchableOpacity>
+        );
+    };
 
     if (loading) {
         return (
@@ -147,7 +156,7 @@ const TeacherMainPage = () => {
         <SafeAreaView style={styles.container}>
             <View style={styles.container}>
                 <View style={styles.header}>
-                    <Text style={styles.headerText}>Tanár csevegő</Text>
+                    <Text style={styles.headerText}>BrainBoost - Tanár csevegő</Text>
                     <TouchableOpacity style={styles.profileButton} onPress={() => router.replace('/(auth)/ProfilePage')}>
                         <Image source={require('./img/profile.png')} style={styles.profileImage} />
                     </TouchableOpacity>

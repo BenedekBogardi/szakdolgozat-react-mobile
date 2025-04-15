@@ -125,9 +125,11 @@ export default function LoggedInStudent() {
 
   const sendMessage = () => {
     if (message.trim()) {
+      const roomName = userData.role === "Teacher" ? "broadcastTeachers" : "broadcastStudents";
       console.log("Emitting message:", { username, text: message });
       socket.emit("newMessage", { username, text: message });
       setMessages((prevMessages) => [...prevMessages, { text: message, self: true, username }]);
+      socket.emit("newMessage", { username, text: message, roomName });
       setMessage("");
     }
   };
