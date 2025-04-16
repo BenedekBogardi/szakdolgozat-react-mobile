@@ -28,6 +28,7 @@ A működést biztosító fontos lépések az alábbiak:
    ```
 
 5. Backend futtatása
+   ALAPÉRTELMEZETT JELSZÓ (Az összes felhasználónak): alma
 
    1. Indítsd el a **XAMPP-on** az `Apache` és `MySQL` szervereket.
    2. Importáld az adatbázist a `PhPMyAdmin`-on belül.
@@ -41,8 +42,8 @@ A működést biztosító fontos lépések az alábbiak:
       1. Hozz létre egy új adatbázist `teaching_website_db` néven a phpMyAdmin felületen.
       2. Az `npx prisma db push`, valamint `npx prisma db seed` parancsok segítségével már kész is a feltöltött adatbázis.
    5. Indítsd el a backend alkalmazást: npm run start:dev
-6. Teljes működés
-   - A teljes működést csak több eszköz segítségével lehetséges szemléltetni. Ugyan lehet egy másik eszközként kezelve a mobilon kívül a PC is (localhost:8081-es címen), de mivel telefonra lett tervezve az alkalmazás, lehetséges, hogy nem fog hibátlanul működni.
+   6. Teljes működés
+      - A teljes működést csak több eszköz segítségével lehetséges szemléltetni. Ugyan lehet egy másik eszközként kezelve a mobilon kívül a PC is (localhost:8081-es címen), de mivel telefonra lett tervezve az alkalmazás, lehetséges, hogy nem fog hibátlanul működni.
 
 ## 2. Felhasználói dokumentáció
 
