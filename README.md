@@ -2,6 +2,8 @@
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
+A működést biztosító fontos lépések az alábbiak:
+
 ## Get started
 
 1. Install dependencies
@@ -9,42 +11,31 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    ```bash
    npm install
    ```
-
-2. Start the app
+2. IP Címek átírása
+   ```bash
+   Az (auth) mappa file-jaiban (kivéve layout.tsx) minden "0.0.0.0" átírása szükséges az aktuális IPv4 címre.
+   ```
+   
+3. Start the app
 
    ```bash
     npx expo start
    ```
+   
+4. Expo Go
+   ```bash
+   A programot az Expo Go mobilalkalmazáson keresztül lehet elindítani a QR kód vagy az URL segítségével.
+   ```
 
-In the output, you'll find options to open the app in a
+5. Backend
+   ```bash
+   A program megfelelő működéséhez szükséges elindítani a backend kódot! (https://github.com/benedekBogardi/backend)
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+6. + 1 - Teljes működés
+   ```bash
+   A teljes működést csak több eszköz segítségével lehetséges szemléltetni. Ugyan lehet egy másik eszköz a PC is a localhost:8081-es címen, de mivel telefonra lett tervezve az alkalmazás, lehetséges, hogy nem fog tökéletesen futni,elsősorban vizuális elemek tekintetében.
+   ```
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
-## Get a fresh project
 
-When you're ready, run:
 
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
